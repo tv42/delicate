@@ -1,23 +1,22 @@
 from twisted.trial import unittest
-from twisted.trial.assertions import *
 from delicate import bookmark, ibookmark
 import datetime
 
 class Instantiate(unittest.TestCase):
     def test_missingURL(self):
         """Missing url argument raises TypeError."""
-        e = failUnlessRaises(TypeError, bookmark.Bookmark)
-        failUnlessEqual(str(e), "Bookmark() missing keyword argument 'url'")
+        e = self.failUnlessRaises(TypeError, bookmark.Bookmark)
+        self.failUnlessEqual(str(e), "Bookmark() missing keyword argument 'url'")
 
     def test_minimal(self):
         """Arguments url and title are the only mandatory arguments."""
         b = bookmark.Bookmark(url='foo')
-        failUnlessEqual(b.url, 'foo')
-        failUnlessEqual(b.title, None)
-        failUnlessEqual(b.description, None)
-        failUnlessEqual(b.tags, [])
-        failIfEqual(b.created, None)
-        failIfEqual(b.modified, None)
+        self.failUnlessEqual(b.url, 'foo')
+        self.failUnlessEqual(b.title, None)
+        self.failUnlessEqual(b.description, None)
+        self.failUnlessEqual(b.tags, [])
+        self.failIfEqual(b.created, None)
+        self.failIfEqual(b.modified, None)
         ibookmark.IBookmark.validateInvariants(b)
 
     def test_full(self):
@@ -29,12 +28,12 @@ class Instantiate(unittest.TestCase):
                               tags=['thud', 'quux'],
                               created=created,
                               modified=modified)
-        failUnlessEqual(b.url, 'foo')
-        failUnlessEqual(b.title, 'bar')
-        failUnlessEqual(b.description, 'longer description')
-        failUnlessEqual(b.tags, ['thud', 'quux'])
-        failUnlessEqual(b.created, created)
-        failUnlessEqual(b.modified, modified)
+        self.failUnlessEqual(b.url, 'foo')
+        self.failUnlessEqual(b.title, 'bar')
+        self.failUnlessEqual(b.description, 'longer description')
+        self.failUnlessEqual(b.tags, ['thud', 'quux'])
+        self.failUnlessEqual(b.created, created)
+        self.failUnlessEqual(b.modified, modified)
         ibookmark.IBookmark.validateInvariants(b)
 
 class Compare(unittest.TestCase):
@@ -46,7 +45,7 @@ class Compare(unittest.TestCase):
                               tags=['thud', 'quux'],
                               created=created,
                               modified=modified)
-        assertEqual(b, b)
+        self.assertEqual(b, b)
 
     def test_equal(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -63,7 +62,7 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertEqual(b1, b2)
+        self.assertEqual(b1, b2)
 
     def test_different_url(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -80,7 +79,7 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
 
     def test_different_title(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -97,7 +96,7 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
 
     def test_different_description(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -114,7 +113,7 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
 
     def test_different_tags(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -131,7 +130,7 @@ class Compare(unittest.TestCase):
                                tags=['not', 'thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
 
     def test_different_created(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -148,7 +147,7 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
 
     def test_different_modified(self):
         created = datetime.datetime(2005, 1, 1, 10, 15, 00)
@@ -165,4 +164,4 @@ class Compare(unittest.TestCase):
                                tags=['thud', 'quux'],
                                created=created,
                                modified=modified)
-        assertNotEqual(b1, b2)
+        self.assertNotEqual(b1, b2)
