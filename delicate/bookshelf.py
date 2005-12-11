@@ -1,8 +1,11 @@
+from zope.interface import implements
 import os, errno, sha, time, datetime
 from twisted.python import log
-from delicate import bookmark
+from delicate import ibookshelf, bookmark
 
 class FileBookshelf(object):
+    implements(ibookshelf.IBookmarkShelf)
+
     path = None
 
     def __init__(self, path, *a, **kw):
