@@ -1,5 +1,5 @@
 from zope.interface import implements
-import os, errno, sha, time, datetime
+import os, errno, sha, time, datetime, codecs
 from twisted.python import log
 from delicate import ibookshelf, bookmark
 
@@ -13,7 +13,7 @@ class FileBookshelf(object):
         self.path = path
 
     def _hash(self, url):
-        return sha.new(url).hexdigest()
+        return sha.new(url.encode('utf-8')).hexdigest()
 
     def _hash_safe(self, url):
         """
@@ -61,7 +61,9 @@ class FileBookshelf(object):
         for field, writer in writers.items():
             value = getattr(bookmark, field, None)
             if value is not None:
-                fp = file(os.path.join(tmp, field), 'w')
+                fp = codecs.open(os.path.join(tmp, field),
+                                 mode='w',
+                                 encoding='utf-8')
                 writer(fp, value)
                 os.fsync(fp)
                 fp.close()
@@ -79,7 +81,7 @@ class FileBookshelf(object):
 
     def _try_open(self, path):
         try:
-            return file(path)
+            return codecs.open(path, encoding='utf-8')
         except IOError, e:
             if e.errno == errno.ENOENT:
                 return None

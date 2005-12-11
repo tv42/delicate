@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from twisted.trial import unittest
 from delicate import bookmark, bookshelf
-import os, datetime
+import os, datetime, sha, sets
 
 class Operations(unittest.TestCase):
     def test_notFound(self):
@@ -69,3 +70,40 @@ class Operations(unittest.TestCase):
         self.assertNotEqual(result, b1)
         # it need not be identical, but it must be equal
         self.assertEqual(result, b2)
+
+    def assertFileEquals(self, path, want):
+        f = file(path)
+        got = f.read()
+        f.close()
+        self.assertEquals(got, want)
+
+    def test_encoding(self):
+        """Files are saved as UTF-8."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+        s = bookshelf.FileBookshelf(tmp)
+        url = u'http://example.com/foo/bläh'
+        title = u'titlöh'
+        description = u'deskriipsöni'
+        tags = [u'föö', u'bär']
+        b = bookmark.Bookmark(url=url,
+                              title=title,
+                              description=description,
+                              tags=tags,
+                              )
+        s.add(b)
+        hashed = sha.new(url.encode('utf-8')).hexdigest()
+        self.assertEquals(os.listdir(tmp), [hashed])
+        path = os.path.join(tmp, hashed)
+        got = sets.Set(os.listdir(path))
+        want = sets.Set(['url', 'title', 'description', 'tags',
+                         'created', 'modified'])
+        self.assertEquals(got, want)
+        self.assertFileEquals(os.path.join(path, 'url'),
+                              url.encode('utf-8')+'\n')
+        self.assertFileEquals(os.path.join(path, 'title'),
+                              title.encode('utf-8')+'\n')
+        self.assertFileEquals(os.path.join(path, 'description'),
+                              description.encode('utf-8')+'\n')
+        self.assertFileEquals(os.path.join(path, 'tags'),
+                              u'\n'.join(tags).encode('utf-8')+'\n')
