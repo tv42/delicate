@@ -24,3 +24,11 @@ class IBookmarkShelf(zi.Interface):
 
     def get(url):
         """Get a bookmark matching the url, or None."""
+
+    def getBookmarks(tags=None):
+        """
+        Return an iterable that will give all the bookmarks stored.
+
+        If tags is given, only bookmarks with all those tags are
+        returned.
+        """

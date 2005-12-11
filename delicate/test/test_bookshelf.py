@@ -108,3 +108,66 @@ class Operations(unittest.TestCase):
                               description.encode('utf-8')+'\n')
         self.assertFileEquals(os.path.join(path, 'tags'),
                               u'\n'.join(tags).encode('utf-8')+'\n')
+
+    def test_getBookmarks_empty(self):
+        """getBookmarks() returns no bookmarks for empty shelves."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        i = s1.getBookmarks()
+        l = list(i)
+        self.assertEquals(l, [])
+
+    def test_getBookmarks_simple(self):
+        """getBookmarks() returns stored bookmarks."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        url = 'http://example.com/foo'
+        b = bookmark.Bookmark(url=url, title='foo')
+        s1.add(b)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        i = s1.getBookmarks()
+        l = list(i)
+        self.assertEquals(l, [b])
+
+    def test_getBookmarks_tags(self):
+        """getBookmarks() does not return bookmarks that do not match tags."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        i = s1.getBookmarks(['thud'])
+        l = list(i)
+        self.assertEquals(l, [b3])
+
+    def test_getBookmarks_tags_neverMatch(self):
+        """getBookmarks() does not return bookmarks that do not match tags."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        i = s1.getBookmarks(['impossible'])
+        l = list(i)
+        self.assertEquals(l, [])

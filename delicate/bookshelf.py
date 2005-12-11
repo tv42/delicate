@@ -1,5 +1,5 @@
 from zope.interface import implements
-import os, errno, sha, time, datetime, codecs
+import os, errno, sha, time, datetime, codecs, sets
 from twisted.python import log
 from delicate import ibookshelf, bookmark
 
@@ -151,3 +151,34 @@ class FileBookshelf(object):
                 else:
                     raise
         os.rmdir(tmppath)
+
+    def _getAllBookmarks(self):
+        for dirname in os.listdir(self.path):
+            if '.' in dirname:
+                continue
+            else:
+                path = os.path.join(self.path,
+                                    dirname,
+                                    'url')
+                fp = self._try_open(path)
+                if fp is None:
+                    continue
+                url = self._readline(fp)
+                fp.close()
+                bookmark = self.get(url)
+                if bookmark is not None:
+                    yield bookmark
+
+    def _getTaggedBookmarks(self, tags):
+        tags = sets.Set(tags)
+        for bookmark in self._getAllBookmarks():
+            wanted = tags & sets.ImmutableSet(bookmark.tags)
+            if wanted:
+                yield bookmark
+
+    def getBookmarks(self, tags=None):
+        if tags:
+            return self._getTaggedBookmarks(tags)
+        else:
+            return self._getAllBookmarks()
+
