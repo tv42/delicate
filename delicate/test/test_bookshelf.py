@@ -171,3 +171,39 @@ class Operations(unittest.TestCase):
         i = s1.getBookmarks(['impossible'])
         l = list(i)
         self.assertEquals(l, [])
+
+    def test_getBookmarks_cache_format(self):
+        """getBookmarks() caches results on disk."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        cache = os.path.join(tmp, '.cache')
+        self.failIf(os.path.exists(cache))
+
+        self.assertEquals(list(s1.getBookmarks(['thud'])), [b3])
+        self.failUnless(os.path.isdir(cache))
+        self.assertEquals(os.listdir(cache), ['by-tag'])
+        self.assertEquals(os.listdir(os.path.join(cache, 'by-tag')),
+                          ['thud'])
+        self.assertFileEquals(os.path.join(cache, 'by-tag', 'thud'),
+                              b3.url+'\n')
+
+        self.assertEquals(list(s1.getBookmarks(['xyzzy'])), [b2])
+        self.failUnless(os.path.isdir(cache))
+        self.assertEquals(os.listdir(cache), ['by-tag'])
+        self.assertEquals(sets.Set(os.listdir(os.path.join(cache, 'by-tag'))),
+                          sets.Set(['thud', 'xyzzy']))
+        self.assertFileEquals(os.path.join(cache, 'by-tag', 'thud'),
+                              b3.url+'\n')
+        self.assertFileEquals(os.path.join(cache, 'by-tag', 'xyzzy'),
+                              b2.url+'\n')

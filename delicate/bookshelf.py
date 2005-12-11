@@ -1,5 +1,5 @@
 from zope.interface import implements
-import os, errno, sha, time, datetime, codecs, sets
+import os, errno, sha, time, datetime, codecs, sets, re
 from twisted.python import log
 from delicate import ibookshelf, bookmark
 
@@ -78,6 +78,15 @@ class FileBookshelf(object):
                     raise
             else:
                 break
+
+    def _try_mkdir(self, path):
+        try:
+            os.mkdir(path)
+        except OSError, e:
+            if e.errno == errno.EEXIST:
+                return None
+            else:
+                raise
 
     def _try_open(self, path):
         try:
@@ -169,12 +178,94 @@ class FileBookshelf(object):
                 if bookmark is not None:
                     yield bookmark
 
-    def _getTaggedBookmarks(self, tags):
-        tags = sets.Set(tags)
+    _SAFE_TAG = re.compile('^[a-z0-9][a-z0-9:_-]*$')
+
+    def _getTagCache(self, tag):
+        # TODO enforce tag sanity better and in one place
+        if not self._SAFE_TAG.search(tag):
+            log.msg('Not caching unsafe tag: %r' % tag)
+            return
+
+        fp = self._try_open(os.path.join(self.path,
+                                         '.cache',
+                                         'by-tag',
+                                         tag))
+        if fp is None:
+            return None
+        urls = self._readlist(fp)
+        fp.close()
+        return sets.Set(urls)
+
+    def _saveTagCache(self, tag, urls):
+        # TODO enforce tag sanity better and in one place
+        if not self._SAFE_TAG.search(tag):
+            log.msg('Not caching unsafe tag: %r' % tag)
+            return
+
+        cache = os.path.join(self.path, '.cache')
+        self._try_mkdir(cache)
+        by_tag = os.path.join(cache, 'by-tag')
+        self._try_mkdir(by_tag)
+        path = os.path.join(by_tag, '%s.%d.tmp' % (tag, os.getpid()))
+        fp = file(path, 'w')
+        self._writelist(fp, urls)
+        fp.close()
+        os.rename(path, os.path.join(by_tag, tag))
+
+    def _refreshTagCache(self, tags):
+        added = {}
         for bookmark in self._getAllBookmarks():
             wanted = tags & sets.ImmutableSet(bookmark.tags)
-            if wanted:
-                yield bookmark
+            for tag in wanted:
+                added.setdefault(tag, sets.Set()).add(bookmark.url)
+
+        for tag, urls in added.items():
+            self._saveTagCache(tag, urls)
+
+        tags = sets.ImmutableSet(added.keys())
+        urls = None
+        for l in added.values():
+            if urls is None:
+                urls = l
+            else:
+                urls &= l
+        return tags, urls
+
+    def _getTaggedBookmarks(self, tags):
+        tags = sets.Set(tags)
+        missing = sets.Set()
+
+        matches = None
+        while tags:
+            tag = tags.pop()
+            urls = self._getTagCache(tag)
+            if urls is not None:
+                if matches is None:
+                    matches = urls
+                else:
+                    matches &= urls
+            else:
+                missing.add(tag)
+
+        if missing:
+            # missing or stale by-tag caches, (re)create
+            addedTags, urls = self._refreshTagCache(missing)
+            missing -= addedTags
+            if matches is None:
+                matches = urls
+            else:
+                matches &= urls
+
+        if missing:
+            # some tags requested never matched any bookmark, so
+            # return empty set
+            return
+
+        if matches is None:
+            return
+
+        for url in matches:
+            yield self.get(url)
 
     def getBookmarks(self, tags=None):
         if tags:
