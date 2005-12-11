@@ -97,7 +97,7 @@ class FileBookshelf(object):
     def _readall(self, fp):
         return fp.read()
     def _readlist(self, fp):
-        return list(fp.xreadlines())
+        return [line.rstrip('\n') for line in fp]
     def _readtime(self, fp):
         line = self._readline(fp)
         seconds = float(line)

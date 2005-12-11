@@ -33,7 +33,8 @@ class Operations(unittest.TestCase):
         url = 'http://example.com/foo'
 
         s1 = bookshelf.FileBookshelf(tmp)
-        b = bookmark.Bookmark(url=url, title='foo')
+        b = bookmark.Bookmark(url=url, title='foo',
+                              tags=['bar', 'thud'])
         s1.add(b)
 
         s2 = bookshelf.FileBookshelf(tmp)
