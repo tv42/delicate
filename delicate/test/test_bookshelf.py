@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from twisted.trial import unittest
 from delicate import bookmark, bookshelf
-import os, datetime, sha, sets
+import os, sha, sets
 
 class Operations(unittest.TestCase):
     def test_notFound(self):

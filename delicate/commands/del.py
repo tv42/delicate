@@ -1,4 +1,3 @@
-import sys
 from twisted.python import usage
 from zope.interface import implements
 from delicate.usage import ICommand

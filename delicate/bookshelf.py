@@ -1,5 +1,5 @@
 from zope.interface import implements
-import os, errno, sha, time, datetime, codecs, sets, re
+import os, errno, sha, datetime, codecs, sets, re
 from twisted.python import log
 from delicate import ibookshelf, bookmark
 
