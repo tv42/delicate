@@ -1,6 +1,10 @@
+from zope.interface import implements
 import datetime
+from delicate import ibookmark
 
 class Bookmark(object):
+    implements(ibookmark.IBookmark)
+
     url = None
     title = None
     description = None
