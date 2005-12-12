@@ -225,6 +225,25 @@ class Operations(unittest.TestCase):
         self.assertFileEquals(os.path.join(cache, 'by-tag', 'xyzzy'),
                               b2.url+'\n')
 
+    def test_getBookmarks_cache_is_used(self):
+        """getBookmarks() really uses the cache."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        self.assertEquals(list(s1.getBookmarks(['thud'])), [b3])
+        s1._getAllBookmarks = lambda *a, **kw: self.fail('getBookmarks() must use cache')
+        self.assertEquals(list(s1.getBookmarks(['thud'])), [b3])
+
     def test_getTags_empty(self):
         """getTags() returns no tags for empty shelves."""
         tmp = self.mktemp()
