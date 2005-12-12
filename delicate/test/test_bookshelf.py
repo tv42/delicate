@@ -152,7 +152,7 @@ class Operations(unittest.TestCase):
         self.assertEquals(l, [b])
 
     def test_getBookmarks_tags(self):
-        """getBookmarks() does not return bookmarks that do not match tags."""
+        """getBookmarks() return exactly the bookmarks that match all tags."""
         tmp = self.mktemp()
         os.mkdir(tmp)
 
@@ -171,7 +171,7 @@ class Operations(unittest.TestCase):
         self.assertEquals(l, [b3])
 
     def test_getBookmarks_tags_neverMatch(self):
-        """getBookmarks() does not return bookmarks that do not match tags."""
+        """getBookmarks() return nothing if given a tag no bookmark has."""
         tmp = self.mktemp()
         os.mkdir(tmp)
 
