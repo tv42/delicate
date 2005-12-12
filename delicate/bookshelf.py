@@ -197,7 +197,7 @@ class FileBookshelf(object):
             return None
         urls = self._readlist(fp)
         fp.close()
-        return sets.Set(urls)
+        return sets.ImmutableSet(urls)
 
     def _saveTagCache(self, tag, urls):
         # TODO enforce tag sanity better and in one place
@@ -215,6 +215,16 @@ class FileBookshelf(object):
         fp.close()
         os.rename(path, os.path.join(by_tag, tag))
 
+    def _intersect(self, a, b):
+        """
+        Return intersection of sets a and b, with the exception that
+        for a, None is taken to mean an infinite set.
+        """
+        if a is None:
+            return b
+        else:
+            return a & b
+
     def _refreshTagCache(self, tags):
         added = {}
         for bookmark in self._getAllBookmarks():
@@ -228,10 +238,7 @@ class FileBookshelf(object):
         tags = sets.ImmutableSet(added.keys())
         urls = None
         for l in added.values():
-            if urls is None:
-                urls = l
-            else:
-                urls &= l
+            urls = self._intersect(urls, l)
         return tags, urls
 
     def _getTaggedBookmarks(self, tags):
@@ -243,10 +250,7 @@ class FileBookshelf(object):
             tag = tags.pop()
             urls = self._getTagCache(tag)
             if urls is not None:
-                if matches is None:
-                    matches = urls
-                else:
-                    matches &= urls
+                matches = self._intersect(matches, urls)
             else:
                 missing.add(tag)
 
@@ -254,10 +258,7 @@ class FileBookshelf(object):
             # missing or stale by-tag caches, (re)create
             addedTags, urls = self._refreshTagCache(missing)
             missing -= addedTags
-            if matches is None:
-                matches = urls
-            else:
-                matches &= urls
+            matches = self._intersect(matches, urls)
 
         if missing:
             # some tags requested never matched any bookmark, so
