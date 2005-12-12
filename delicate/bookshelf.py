@@ -1,5 +1,6 @@
 from zope.interface import implements
 import os, errno, sha, datetime, codecs, sets, re
+from twisted.internet import defer
 from twisted.python import log
 from delicate import ibookshelf, bookmark
 
@@ -273,3 +274,45 @@ class FileBookshelf(object):
         else:
             return self._getAllBookmarks()
 
+    def _getTags(self):
+        tags = sets.Set()
+        for bookmark in self.getBookmarks():
+            tags.update(sets.ImmutableSet(bookmark.tags))
+        return tags
+
+    def _getTags_cached(self):
+        fp = self._try_open(os.path.join(self.path,
+                                         '.cache',
+                                         'taglist.txt'))
+        if fp is None:
+            return None
+
+        tags = sets.ImmutableSet(self._readlist(fp))
+        fp.close()
+        return tags
+
+    def _cacheTags(self, tags):
+        cache = os.path.join(self.path, '.cache')
+        self._try_mkdir(cache)
+        path = os.path.join(cache,
+                            'taglist.%d.tmp' % os.getpid())
+        fp = file(path, 'w')
+        self._writelist(fp, tags)
+        fp.close()
+        os.rename(path, os.path.join(cache, 'taglist.txt'))
+        return tags
+
+    def getTags(self):
+        d = defer.maybeDeferred(self._getTags_cached)
+
+        def loadIfNeeded(tags):
+            if tags is not None:
+                # read from cache
+                return tags
+            else:
+                d = defer.maybeDeferred(self._getTags)
+                d.addCallback(self._cacheTags)
+                return d
+        d.addCallback(loadIfNeeded)
+
+        return d

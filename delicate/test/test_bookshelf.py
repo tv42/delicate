@@ -207,3 +207,114 @@ class Operations(unittest.TestCase):
                               b3.url+'\n')
         self.assertFileEquals(os.path.join(cache, 'by-tag', 'xyzzy'),
                               b2.url+'\n')
+
+    def test_getTags_empty(self):
+        """getTags() returns no tags for empty shelves."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        d = s1.getTags()
+        d.addCallback(self.assertEquals, sets.Set())
+        return d
+
+    def test_getTags_noTags(self):
+        """getTags() returns no tags for bookmarks with no tags."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        s1.add(b)
+
+        d = s1.getTags()
+        d.addCallback(self.assertEquals, sets.Set())
+        return d
+
+    def test_getTags_simple(self):
+        """getTags() returns stored tags."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo',
+                               tags=['quux'])
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar')
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'xyzzy'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        def test(shelf):
+            d = shelf.getTags()
+            d.addCallback(self.assertEquals, sets.Set([u'quux', u'thud', u'xyzzy']))
+            return d
+
+        # repeat a bit to flush out bugs in caching
+        d = test(s1)
+        d.addCallback(lambda dummy: test(s1))
+        d.addCallback(lambda dummy: test(s1))
+        return d
+
+    def test_getTags_cache_format(self):
+        """getTags() caches results on disk."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        cache = os.path.join(tmp, '.cache')
+        self.failIf(os.path.exists(cache))
+
+        d = s1.getTags()
+        d.addCallback(self.assertEquals, sets.Set(['xyzzy', 'thud', 'quux']))
+
+        def cb(dummy):
+            self.failUnless(os.path.isdir(cache))
+            self.assertEquals(os.listdir(cache), ['taglist.txt'])
+            path = os.path.join(cache, 'taglist.txt')
+            f = file(path)
+            data = f.read()
+            f.close()
+            got = sets.Set(data.splitlines())
+            want = sets.Set(['xyzzy', 'thud', 'quux'])
+            self.assertEquals(got, want)
+
+        d.addCallback(cb)
+        return d
+
+    def test_getTags_cache_is_used(self):
+        """getTags() really uses the cache."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo')
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        d = s1.getTags()
+        d.addCallback(self.assertEquals, sets.Set(['xyzzy', 'thud', 'quux']))
+
+        def cb(dummy):
+            s1.getBookmarks = lambda *a, **kw: self.fail('getTags() must use cache')
+            d = s1.getTags()
+            d.addCallback(self.assertEquals, sets.Set(['xyzzy', 'thud', 'quux']))
+
+        d.addCallback(cb)
+        return d

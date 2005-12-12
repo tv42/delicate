@@ -32,3 +32,12 @@ class IBookmarkShelf(zi.Interface):
         If tags is given, only bookmarks with all those tags are
         returned.
         """
+
+    def getTags():
+        """
+        Return a Deferred iterable containing all the tags used in
+        this bookshelf.
+
+        Set refresh to True if cached results are unacceptable. This
+        may be extremely slow.
+        """
