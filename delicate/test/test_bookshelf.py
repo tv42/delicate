@@ -34,6 +34,7 @@ class Operations(unittest.TestCase):
 
         s1 = bookshelf.FileBookshelf(tmp)
         b = bookmark.Bookmark(url=url, title='foo',
+                              description=u'blah blah\nblah blah',
                               tags=['bar', 'thud'])
         s1.add(b)
 
@@ -43,6 +44,22 @@ class Operations(unittest.TestCase):
                                 'Must find %r in %r' % (url, s2))
         # it need not be identical, but it must be equal
         self.assertEqual(result, b)
+
+    def test_description_trailingNewLine(self):
+        """Bookmarks persist in the filesystem."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+        url = 'http://example.com/foo'
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b = bookmark.Bookmark(url=url, title='foo',
+                              description=u'blah blah\nblah blah\n')
+        s1.add(b)
+
+        s2 = bookshelf.FileBookshelf(tmp)
+        result = s2.get(url)
+        self.assertEqual(result, b)
+        self.assertEqual(result.description, u'blah blah\nblah blah\n')
 
     def test_removed_not_found(self):
         """Removed bookmarks are no longer found."""
@@ -105,7 +122,7 @@ class Operations(unittest.TestCase):
         self.assertFileEquals(os.path.join(path, 'title'),
                               title.encode('utf-8')+'\n')
         self.assertFileEquals(os.path.join(path, 'description'),
-                              description.encode('utf-8')+'\n')
+                              description.encode('utf-8'))
         self.assertFileEquals(os.path.join(path, 'tags'),
                               u'\n'.join(tags).encode('utf-8')+'\n')
 

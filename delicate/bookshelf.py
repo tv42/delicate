@@ -40,6 +40,8 @@ class FileBookshelf(object):
 
     def _write(self, fp, data):
         print >>fp, data
+    def _writeall(self, fp, data):
+        fp.write(data)
     def _writelist(self, fp, data):
         for item in data:
             print >>fp, item
@@ -54,7 +56,7 @@ class FileBookshelf(object):
         writers = {
             'url': self._write,
             'title': self._write,
-            'description': self._write,
+            'description': self._writeall,
             'tags': self._writelist,
             'created': self._writetime,
             'modified': self._writetime,
