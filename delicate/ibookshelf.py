@@ -8,20 +8,6 @@ class IBookmarkShelf(zi.Interface):
     to be like a dict mapping URLs to IBookmarks.
     """
 
-    def add(bookmark):
-        """Add a bookmark to the shelf."""
-
-    def remove(url):
-        """
-        Remove bookmark identified by url from the shelf.
-
-        @todo: Removes are final and not undoable. The plan is to
-        build an undelete-capable layer on top of this by making
-        delete tag bookmarks with system:deleted, and periodically
-        purge all bookmarks tagged with system:deleted that have
-        last modification time sufficiently far in the past.
-        """
-
     def get(url):
         """Get a bookmark matching the url, or None."""
 
@@ -42,4 +28,23 @@ class IBookmarkShelf(zi.Interface):
 
         Set refresh to True if cached results are unacceptable. This
         may be extremely slow.
+        """
+
+class IWritableBookmarkShelf(IBookmarkShelf):
+    """
+    Writable bookmark storage.
+    """
+
+    def add(bookmark):
+        """Add a bookmark to the shelf."""
+
+    def remove(url):
+        """
+        Remove bookmark identified by url from the shelf.
+
+        @todo: Removes are final and not undoable. The plan is to
+        build an undelete-capable layer on top of this by making
+        delete tag bookmarks with system:deleted, and periodically
+        purge all bookmarks tagged with system:deleted that have
+        last modification time sufficiently far in the past.
         """
