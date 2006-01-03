@@ -1,0 +1,40 @@
+div.delicate-bookmark p
+{
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+  font-size: 80%;
+  }
+
+div.delicate-metadata
+{
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+  font-size: 80%;
+  }
+
+#delicate-tagchooser
+{
+  background-color: #eaf0ff;
+  padding: 2px;
+  }
+
+#delicate-tagchooser ul li
+{
+  display: inline;
+  margin-right: 0.5em;
+  }
+
+#delicate-tagchooser ul li a
+{
+  border: solid 1px #eaf0ff;
+ }
+
+#delicate-tagchooser ul li a.delicate-tagchooser-chosen
+{
+  background-color: #c0c0f0;
+  border: solid 1px #c0c0f0;
+  }
+
+.delicate-invisible {
+ display: none;
+}
