@@ -1,9 +1,31 @@
 # -*- coding: utf-8 -*-
 from twisted.trial import unittest
+from zope.interface import verify as ziverify
 from delicate import bookmark, bookshelf
+from delicate import ibookshelf, ibookmark
 import os, sha, sets
 
 class Operations(unittest.TestCase):
+    def validate(self, iface, thing):
+        ziverify.verifyObject(iface, thing)
+        iface.validateInvariants(thing)
+
+    def test_interface(self):
+        """Test that FileBookshelf fulfills IWritableBookmarkShelf."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+        s = bookshelf.FileBookshelf(tmp)
+        self.validate(ibookshelf.IWritableBookmarkShelf, s)
+        url = 'http://example.com/'
+        b = bookmark.Bookmark(url=url, title='foo')
+        self.validate(ibookmark.IBookmark, b)
+        s.add(b)
+        self.validate(ibookshelf.IWritableBookmarkShelf, s)
+        result = s.get(url)
+        self.validate(ibookshelf.IWritableBookmarkShelf, s)
+        self.validate(ibookmark.IBookmark, result)
+        self.assertEquals(result, b)
+
     def test_notFound(self):
         """Return None when no bookmark found."""
         tmp = self.mktemp()

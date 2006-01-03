@@ -1,8 +1,13 @@
 from twisted.trial import unittest
+from zope.interface import verify as ziverify
 from delicate import bookmark, ibookmark
 import datetime
 
 class Instantiate(unittest.TestCase):
+    def validate(self, iface, thing):
+        ziverify.verifyObject(iface, thing)
+        iface.validateInvariants(thing)
+
     def test_missingURL(self):
         """Missing url argument raises TypeError."""
         e = self.failUnlessRaises(TypeError, bookmark.Bookmark)
@@ -17,7 +22,7 @@ class Instantiate(unittest.TestCase):
         self.failUnlessEqual(b.tags, [])
         self.failIfEqual(b.created, None)
         self.failIfEqual(b.modified, None)
-        ibookmark.IBookmark.validateInvariants(b)
+        self.validate(ibookmark.IBookmark, b)
 
     def test_full(self):
         """Bookmark creation understands wanted things and assigns to self."""
@@ -34,7 +39,7 @@ class Instantiate(unittest.TestCase):
         self.failUnlessEqual(b.tags, ['thud', 'quux'])
         self.failUnlessEqual(b.created, created)
         self.failUnlessEqual(b.modified, modified)
-        ibookmark.IBookmark.validateInvariants(b)
+        self.validate(ibookmark.IBookmark, b)
 
 class Compare(unittest.TestCase):
     def test_self(self):
