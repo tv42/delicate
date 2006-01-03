@@ -1,0 +1,63 @@
+Delicate
+========
+
+Tagged information browsing/editing environment with delusions on
+grandeur.
+
+I'm tired of how laggy http://del.icio.us/ is, how bad the service
+breaks are, and so on. It's time to take action.
+
+Even if del.icio.us had 100% uptime and bandwidth, I lack faith in
+both reliability and continuity of centralized services, that try to
+serve the whole Internet. That's just not a good architecture.
+
+This is where delicate comes in.
+
+	delicate = del.icio.us + replicate
+
+My plan is to write a del.icio.us-like tagged bookmark browser with
+pluggable storage backends, and to provide mechanisms to synchronize
+the bookmarks with del.icio.us or whatever is the popular social thing
+of the day. The synchronization feature will be able to e.g. only
+publish bookmarks with the tag "public", or ones without the tag
+"private", allowing you to maintain public and private
+bookmarks.
+
+Currently, delicate knows how to import your del.icio.us export.html
+file. Export is restricted to authenticated users in del.icio.us. If
+you just want something to play with, see
+delicate/delicious/test/export.html. Then run
+
+	./bin/delicate deli2dir export.html del.icio.us
+
+The web interface shows bookmarks from
+delicate/delicious/test/export.html by default, you may want to edit
+web.tac to use the bookmarks you just imported.
+
+I'm currently more interested in filesystem-backed storage, but the
+design should be able to handle databases too. Feel free to start
+coding. I intend to plug the filesystem thingie into a distributed
+version control, and use that to backup my bookmarks and make them
+available on multiple hosts. Currently that is likely to be git, but
+if there is interest that should be easy to make pluggable.
+
+My interests in the user interface area are:
+
+- a web-based AJAXy browser for casual use
+
+- a command line interface when that's more convenient
+
+
+Dependencies
+------------
+
+This whole thing is being built on top of:
+
+- Python (>= 2.3)
+
+- Twisted (>= 2.0.1)
+
+- Nevow (SVN trunk atleast for a while, Athena is still in
+  development; maybe 0.8 will have a usable Athena)
+
+- Athena uses MochiKit, but that is embedded in Nevow
