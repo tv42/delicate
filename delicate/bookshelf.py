@@ -5,7 +5,7 @@ from twisted.python import log
 from delicate import ibookshelf, bookmark
 
 class FileBookshelf(object):
-    implements(ibookshelf.IBookmarkShelf)
+    implements(ibookshelf.IWritableBookmarkShelf)
 
     path = None
 
