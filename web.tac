@@ -11,6 +11,7 @@ myService = service.IServiceCollection(application)
 
 shelf = fromdelicious.DeliciousBookmarkShelf(
     'delicate/delicious/test/export.html')
+## shelf = bookshelf.FileBookshelf('del.icio.us')
 
 site = appserver.NevowSite(view.ViewResource(rootObject=shelf))
 
