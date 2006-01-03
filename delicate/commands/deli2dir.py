@@ -1,4 +1,4 @@
-import sys, os
+import os
 from twisted.python import usage
 from zope.interface import implements
 from delicate import bookshelf

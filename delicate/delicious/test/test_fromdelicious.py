@@ -1,6 +1,5 @@
 from twisted.trial import unittest
 from twisted.python import util
-from cStringIO import StringIO
 import datetime
 from delicate.delicious import fromdelicious
 
