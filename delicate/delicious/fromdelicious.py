@@ -1,7 +1,7 @@
 """Parse bookmarks exported as HTML from del.icio.us."""
 
 from zope.interface import implements
-import datetime
+import datetime, sets, itertools
 from twisted.web import microdom
 
 from delicate import ibookshelf, bookmark
@@ -84,7 +84,7 @@ class DeliciousBookmarkShelf(object):
                     if a.parentNode.nodeName == 'dt':
                         return self._nodeToBookmark(a.parentNode)
 
-    def __iter__(self):
+    def _getAllBookmarks(self):
         # workaround for http://twistedmatrix.com/bugs/issue1358
         laterClosers = {}
         laterClosers.update(microdom.MicroDOMParser.laterClosers)
@@ -96,3 +96,19 @@ class DeliciousBookmarkShelf(object):
         for dl in tree.getElementsByTagName('dl'):
             for dt in dl.getElementsByTagName('dt'):
                 yield self._nodeToBookmark(dt)
+
+    def getBookmarks(self, tags=None, count=None):
+        r = self._getAllBookmarks()
+        if tags is not None:
+            musthave = sets.ImmutableSet(tags)
+            r = itertools.ifilter(
+                lambda b: musthave <= sets.ImmutableSet(b.tags), r)
+        if count is not None:
+            r = itertools.islice(r, count)
+        return r
+
+    def getTags(self):
+        tags = sets.Set()
+        for bookmark in self.getBookmarks():
+            tags.update(sets.ImmutableSet(bookmark.tags))
+        return tags
