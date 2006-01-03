@@ -151,6 +151,47 @@ class Operations(unittest.TestCase):
         l = list(i)
         self.assertEquals(l, [b])
 
+
+    def test_getBookmarks_count_high(self):
+        """getBookmarks(count=n) returns less than n if not enough bookmarks."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        url = 'http://example.com/foo'
+        b = bookmark.Bookmark(url=url, title='foo')
+        s1.add(b)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        i = s1.getBookmarks(count=100)
+        l = list(i)
+        self.assertEquals(l, [b])
+
+    def test_getBookmarks_count_low(self):
+        """getBookmarks(count=n) returns n bookmarks even if there are more."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        bookmarks = [
+            bookmark.Bookmark(url='http://example.com/foo1', title='1foo'),
+            bookmark.Bookmark(url='http://example.com/foo2', title='2foo'),
+            bookmark.Bookmark(url='http://example.com/foo3', title='3foo'),
+            bookmark.Bookmark(url='http://example.com/foo4', title='4foo'),
+            bookmark.Bookmark(url='http://example.com/foo5', title='5foo'),
+            bookmark.Bookmark(url='http://example.com/foo6', title='6foo'),
+            ]
+        for b in bookmarks:
+            s1.add(b)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        i = s1.getBookmarks(count=4)
+        l = list(i)
+        self.assertEquals(len(l), 4)
+        for b in l:
+            self.failUnless(b in bookmarks)
+
+
     def test_getBookmarks_tags(self):
         """getBookmarks() return exactly the bookmarks that match all tags."""
         tmp = self.mktemp()
@@ -169,6 +210,28 @@ class Operations(unittest.TestCase):
         i = s1.getBookmarks(['thud'])
         l = list(i)
         self.assertEquals(l, [b3])
+
+    def test_getBookmarks_tags_count(self):
+        """getBookmarks(tags, count=n) returns at most n bookmarks that match all tags."""
+        tmp = self.mktemp()
+        os.mkdir(tmp)
+
+        s1 = bookshelf.FileBookshelf(tmp)
+        b1 = bookmark.Bookmark(url='http://example.com/foo', title='foo',
+                               tags=['thud'])
+        b2 = bookmark.Bookmark(url='http://example.com/bar', title='bar',
+                               tags=['xyzzy', 'thud'])
+        b3 = bookmark.Bookmark(url='http://example.com/baz', title='baz',
+                               tags=['thud', 'quux'])
+        s1.add(b1)
+        s1.add(b2)
+        s1.add(b3)
+
+        i = s1.getBookmarks(['thud'], count=2)
+        l = list(i)
+        self.assertEquals(len(l), 2)
+        for b in l:
+            self.failUnless(b in [b1, b2, b3])
 
     def test_getBookmarks_tags_neverMatch(self):
         """getBookmarks() return nothing if given a tag no bookmark has."""

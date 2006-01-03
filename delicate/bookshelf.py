@@ -1,5 +1,5 @@
 from zope.interface import implements
-import os, errno, sha, datetime, codecs, sets, re
+import os, errno, sha, datetime, codecs, sets, re, itertools
 from twisted.internet import defer
 from twisted.python import log
 from delicate import ibookshelf, bookmark
@@ -271,11 +271,14 @@ class FileBookshelf(object):
         for url in matches:
             yield self.get(url)
 
-    def getBookmarks(self, tags=None):
+    def getBookmarks(self, tags=None, count=None):
         if tags:
-            return self._getTaggedBookmarks(tags)
+            r = iter(self._getTaggedBookmarks(tags))
         else:
-            return self._getAllBookmarks()
+            r = iter(self._getAllBookmarks())
+        if count is not None:
+            r = itertools.islice(r, count)
+        return r
 
     def _getTags(self):
         tags = sets.Set()
