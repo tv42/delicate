@@ -1,5 +1,10 @@
 from twisted.python.usage import Options, UsageError
-from twisted.plugin import IPlugin, getPlugins
+from twisted.plugin import IPlugin
+try:
+    from twisted.plugin import getPlugins
+except ImportError:
+    # twisted 2.0.1 compatibility
+    from twisted.plugin import getPlugIns as getPlugins
 
 class ICommand(IPlugin):
     def parseOptions(args):
