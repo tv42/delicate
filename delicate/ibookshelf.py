@@ -1,4 +1,5 @@
 import zope.interface as zi
+from delicate import ibookmark
 
 class IBookmarkShelf(zi.Interface):
     """
@@ -10,6 +11,7 @@ class IBookmarkShelf(zi.Interface):
 
     def get(url):
         """Get a bookmark matching the url, or None."""
+    get.return_type = ibookmark.IBookmark
 
     def getBookmarks(tags=None, count=None):
         """
