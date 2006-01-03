@@ -1,7 +1,7 @@
 import zope.interface as zi
 
 class URLMissingError(zi.Invalid):
-    """Bookmark is missing mandatory attribute url"""
+    """Attribute url of IBookmark must be present and not None"""
 
     def __str__(self):
         return '%s: %s' % (self.__doc__, ', '.join([repr(x) for x in self.args]))
