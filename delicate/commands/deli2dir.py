@@ -21,7 +21,7 @@ class Deli2Dir(usage.Options):
         os.mkdir(self['path'])
         src = fromdelicious.DeliciousBookmarkShelf(self['export'])
         dst = bookshelf.FileBookshelf(self['path'])
-        for bookmark in src:
+        for bookmark in src.getBookmarks():
             dst.add(bookmark)
 
 x = Deli2Dir()
