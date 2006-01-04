@@ -28,7 +28,7 @@ file. Export is restricted to authenticated users in del.icio.us. If
 you just want something to play with, see
 delicate/delicious/test/export.html. Then run
 
-	./bin/delicate deli2dir export.html del.icio.us
+	PYTHONPATH=. ./bin/delicate deli2dir export.html del.icio.us
 
 The web interface shows bookmarks from
 delicate/delicious/test/export.html by default, you may want to edit
