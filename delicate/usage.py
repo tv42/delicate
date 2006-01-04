@@ -4,7 +4,13 @@ try:
     from twisted.plugin import getPlugins
 except ImportError:
     # twisted 2.0.1 compatibility
-    from twisted.plugin import getPlugIns as getPlugins
+    from twisted.plugin import getPlugIns
+    class _sentinel(object): pass
+    def getPlugins(interface, package=_sentinel):
+        kw = {}
+        if package is not _sentinel:
+            kw['module'] = package
+        return getPlugIns(interface, **kw)
 
 class ICommand(IPlugin):
     def parseOptions(args):
